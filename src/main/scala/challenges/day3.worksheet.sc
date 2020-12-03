@@ -5,7 +5,7 @@ import collectionutil._
 def grid(rows: IndexedSeq[String]): Either[String, Grid] =
       required(rows.nonEmpty)
   *>  required(rows.forall(_.length == rows.head.length))
-  *>  traverse(rows)(row => traverse(row)(c =>
+  *>  traverse(rows)(traverse(_)(c =>
         if c == '#' then Right(true)
         else if c == '.' then Right(false)
         else Left(s"unknown char $c")
@@ -14,12 +14,16 @@ def grid(rows: IndexedSeq[String]): Either[String, Grid] =
 
 case class Grid(height: Int, isTree: (Int, Int) => Boolean)
 
-type Policy = (Int, Grid) => Option[Boolean]
+type Policy = (Int, Grid) => Int => Int
 
-def slope(r: Int, d: Int): Policy = (i, g) => Option.when(i * d < g.height)(g.isTree(i * d, i * r))
+def slope(r: Int, d: Int): Policy = (i, g) =>
+  if i * d >= g.height || !g.isTree(i * d, i * r) then
+    _ + 0
+  else
+    _ + 1
 
 def collisions(p: Policy)(g: Grid) =
-  (for i <- 1 until g.height yield p(i, g)).flatten.count(identity)
+  (for i <- 1 until g.height yield p(i, g)).foldRight(0)(_(_))
 
 def trees(ps: Policy*)(g: Grid) =
   ps.map(p => BigInt(collisions(p)(g))).product

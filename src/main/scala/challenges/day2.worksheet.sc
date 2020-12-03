@@ -25,7 +25,7 @@ def _n(policy: Policy) =
     lines   <- io.unsafe.lines(challenge(day=2, part=0))
     matches <- traverse(lines)(parseEntry(policy))
   yield
-    matches.count(x => x)
+    matches.count(identity)
 
 val _0 = _n(validateOld).eval
 val _1 = _n(validateNew).eval

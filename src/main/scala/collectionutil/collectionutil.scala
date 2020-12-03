@@ -4,16 +4,17 @@ import collection.mutable
 
 def traverse[E,T,U,C[X] <: Seq[X]](ts: C[T])(f: T => Either[E, U])(using fac: collection.Factory[U, C[U]]): Either[E, C[U]] =
 
-  def inner(buf: mutable.Builder[U, C[U]], ts: Seq[T]): Either[E, C[U]] = ts match
-    case t +: ts => f(t) match
-      case Left(e)  => Left(e)
-      case Right(b) => inner(buf += b, ts)
-    case _       => Right(buf.result)
+  def inner(buf: mutable.Builder[U, C[U]], ts: Iterator[T]): Either[E, C[U]] =
+    if ts.hasNext then
+      f(ts.next) match
+        case Left(e)  => Left(e)
+        case Right(b) => inner(buf += b, ts)
+    else
+      Right(buf.result)
 
-  inner(fac.newBuilder, ts)
+  inner(fac.newBuilder, ts.iterator)
 
 inline def required(inline test: Boolean) =
-  val valid = test
   if test then Right(())
   else Left("requirement failed: " + compiletime.codeOf(test))
 
