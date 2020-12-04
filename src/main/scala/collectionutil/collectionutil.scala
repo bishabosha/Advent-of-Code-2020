@@ -24,3 +24,6 @@ extension [E, T, U](e: Either[E, T]):
   def *> (that: => Either[E,U]): Either[E, U] = e.flatMap(_ => that)
 
   def !> (f: T => U): Either[E, U] = e.map(f)
+
+extension [T](p: T => Boolean):
+  def && (q: T => Boolean): T => Boolean = t => p(t) && q(t)
