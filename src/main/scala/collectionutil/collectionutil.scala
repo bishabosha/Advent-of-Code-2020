@@ -2,6 +2,18 @@ package collectionutil
 
 import collection.mutable
 
+def groupLines[C[X] <: Seq[X]](lines: C[String])(using fac: collection.Factory[Seq[String], C[C[String]]]): C[C[String]] =
+
+  def inner(acc: mutable.Builder[Seq[String], C[C[String]]], remaining: Seq[String]): C[C[String]] =
+    val (group, remaining1) = remaining.dropWhile(_.trim.isEmpty).span(_.trim.nonEmpty)
+    acc += group
+    if remaining1.isEmpty then
+      acc.result
+    else
+      inner(acc += group, remaining1)
+
+  inner(fac.newBuilder, lines)
+
 def traverse[E,T,U,C[X] <: Seq[X]](ts: C[T])(f: T => Either[E, U])(using fac: collection.Factory[U, C[U]]): Either[E, C[U]] =
 
   def inner(buf: mutable.Builder[U, C[U]], ts: Iterator[T]): Either[E, C[U]] =

@@ -13,7 +13,7 @@ enum Code:
 
 val Codes = Code.values.map(c => c.toString.toLowerCase -> c).toMap
 
-def process(lines: Seq[String]): Either[String, List[Passport]] =
+def process(lines: Seq[String]): Either[String, Seq[Passport]] =
 
   val Field = s"(${Codes.keys.mkString("|")}):(.+)".r
 
@@ -24,14 +24,7 @@ def process(lines: Seq[String]): Either[String, List[Passport]] =
       case unknown            => Left(s"unknown field $unknown")
     }
 
-  def inner(acc: List[Seq[String]], remaining: Seq[String]): List[Seq[String]] =
-    val (group, remaining1) = remaining.dropWhile(_.trim.isEmpty).span(_.trim.nonEmpty)
-    if remaining1.isEmpty then
-      acc
-    else
-      inner(group :: acc, remaining1)
-
-  traverse(inner(Nil, lines))(fields).map(_.map(_.toMap))
+  traverse(groupLines(lines))(fields).map(_.map(_.toMap))
 
 end process
 
