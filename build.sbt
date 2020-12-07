@@ -9,5 +9,6 @@ lazy val root = project
     scalaVersion := dottyVersion,
 
     libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % "test",
-    libraryDependencies += "com.lihaoyi" %% "os-lib" % "0.7.1"
+    libraryDependencies += "com.lihaoyi" %% "os-lib" % "0.7.1",
+    libraryDependencies += "org.typelevel" %% "cats-parse" % "0.2-34-848b05d"
   )

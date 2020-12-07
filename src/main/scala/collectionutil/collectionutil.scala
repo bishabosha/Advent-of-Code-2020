@@ -2,6 +2,8 @@ package collectionutil
 
 import collection.mutable
 
+def occurrences[T](ts: Seq[T]) = ts.groupBy(identity).view.mapValues(_.length)
+
 def groupLines[C[X] <: Seq[X]](lines: C[String])(using fac: collection.Factory[Seq[String], C[C[String]]]): C[C[String]] =
 
   def inner(acc: mutable.Builder[Seq[String], C[C[String]]], remaining: Seq[String]): C[C[String]] =
@@ -10,7 +12,7 @@ def groupLines[C[X] <: Seq[X]](lines: C[String])(using fac: collection.Factory[S
     if remaining1.isEmpty then
       acc.result
     else
-      inner(acc += group, remaining1)
+      inner(acc, remaining1)
 
   inner(fac.newBuilder, lines)
 
