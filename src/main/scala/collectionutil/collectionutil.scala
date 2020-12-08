@@ -2,6 +2,26 @@ package collectionutil
 
 import collection.mutable
 
+type State[S, T] = S => (T, S)
+
+def traverseState[S, T, U](tss: Seq[State[S, T]]): State[S, Seq[T]] = { s =>
+  val (buf, s1) = tss.foldLeft((tss.iterableFactory.newBuilder[T], s)) { (acc, ts) =>
+    val (z, s) = acc
+    map(ts)(z += _)(s)
+  }
+  (buf.result, s1)
+}
+
+extension [S, T, U, V](st: State[S, T]) def flatMap(f: T => State[S, U]): State[S, U] = { s =>
+  val (t, s1) = st(s)
+  f(t)(s1)
+}
+
+extension [S, T, U, V](st: State[S, T]) def map(f: T => U): State[S, U] = { s =>
+  val (t, s1) = st(s)
+  (f(t), s1)
+}
+
 def occurrences[T](ts: Seq[T]) = ts.groupBy(identity).view.mapValues(_.length)
 
 def groupLines[C[X] <: Seq[X]](lines: C[String])(using fac: collection.Factory[Seq[String], C[C[String]]]): C[C[String]] =
