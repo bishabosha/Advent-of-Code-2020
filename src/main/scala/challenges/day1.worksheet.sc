@@ -1,5 +1,7 @@
 import challenges._
 
+import collectionutil._
+
 def pairs(xs: Seq[Int], ys: Seq[Int]): Seq[Int] =
   for
     x <- xs
@@ -17,13 +19,17 @@ def triples(xs: Seq[Int], ys: Seq[Int], zs: Seq[Int]): Seq[Int] =
   yield
     x * y * z
 
+def parseInt(str: String) =
+  Numeric[Int].parseString(str).toRight(s"not a number: $str")
+
 def _n[T](f: Seq[Int] => Seq[T]) = (
   for
-    ints <- io.unsafe.ints(challenge(day=1, part=0))
-    res  <- f(ints.to(LazyList)).headOption.toRight("expected at least 1 result")
+    lines <- io.unsafe.lines(challenge(day=1, part=0))
+    ints  <- traverse(lines)(parseInt)
+    res   <- f(ints.to(LazyList)).headOption.toRight("expected at least 1 result")
   yield
     res
-).eval
+)
 
-val _0 = _n(ints => pairs(ints, ints))
-val _1 = _n(ints => triples(ints, ints, ints))
+val _0 = _n(ints => pairs(ints, ints)).eval
+val _1 = _n(ints => triples(ints, ints, ints)).eval

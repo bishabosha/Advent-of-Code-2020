@@ -7,8 +7,3 @@ def lines(file: os.Path => os.Path): IO[IndexedSeq[String]] =
   try Right(os.read.lines(file(os.pwd)))
   catch
     case err: java.io.IOException => Left(err)
-
-def ints(file: os.Path => os.Path): Result[java.io.IOException | NumberFormatException, IndexedSeq[Int]] =
-  try lines(file).map(_.map(_.toInt))
-  catch
-    case err: NumberFormatException => Left(err)
