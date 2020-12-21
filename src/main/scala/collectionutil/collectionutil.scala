@@ -48,6 +48,22 @@ def traverse[E,T,U,C[X] <: Seq[X]](ts: C[T])(f: T => Either[E, U])(using fac: co
 
   inner(fac.newBuilder, ts.iterator)
 
+def traverse[E,T,U: reflect.ClassTag](ts: geny.Generator[T])(f: T => Either[E, U]): Either[E, IndexedSeq[U]] =
+  val buf = mutable.ArrayBuilder.make[U]
+  var resErr: Left[E, Nothing] | Null = null
+  val access = ts.generate { t =>
+    f(t) match
+      case Right(u) =>
+        buf += u
+        geny.Generator.Continue
+      case Left(err) =>
+        resErr = Left(err)
+        geny.Generator.End
+
+  }
+  if resErr eq null then Right(buf.result.toIndexedSeq)
+  else resErr
+
 inline def required(inline test: Boolean) =
   if test then Right(())
   else Left("requirement failed: " + compiletime.codeOf(test))

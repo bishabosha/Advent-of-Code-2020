@@ -19,7 +19,7 @@ val Seats = 0 to 7
 
 val Position = raw"([FB]{7})([LR]{3})".r
 
-def parse(lines: Seq[String]): Either[String, Seq[Position]] = traverse(lines) {
+def parse(lines: geny.Generator[String]): Either[String, Seq[Position]] = traverse(lines) {
   case Position(row, seat) => Right((row.toIndexedSeq -> seat.toIndexedSeq).asInstanceOf[Position])
   case _                   => Left(s"expected $Position")
 }
@@ -44,12 +44,12 @@ def missing(ids: Seq[Int]): Int =
 
   (allIds -- ids).ensuring(_.size == 1).head
 
-def _n[T](f: Seq[Int] => T) =
+lazy val _n =
   for
-    lines <- io.unsafe.lines(challenge(day=5, part=0))
+    lines <- io.unsafe.lineStream(challenge(day=5, part=0))
     pss  <- parse(lines)
   yield
-    f(pss.map(decodeId(RowSplit, Rows, SeatSplit, Seats)))
+    pss.map(decodeId(RowSplit, Rows, SeatSplit, Seats))
 
-val _0 = _n(_.max).eval
-val _1 = _n(missing).eval
+val _0 = _n.map(_.max).eval
+val _1 = _n.map(missing).eval

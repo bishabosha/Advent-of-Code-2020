@@ -24,7 +24,7 @@ def parseInt(str: String) =
 
 def _n[T](f: Seq[Int] => Seq[T]) = (
   for
-    lines <- io.unsafe.lines(challenge(day=1, part=0))
+    lines <- io.unsafe.lineStream(challenge(day=1, part=0))
     ints  <- traverse(lines)(parseInt)
     res   <- f(ints.to(LazyList)).headOption.toRight("expected at least 1 result")
   yield

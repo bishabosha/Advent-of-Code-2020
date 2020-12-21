@@ -22,7 +22,7 @@ def parseEntry(policy: Policy)(entry: String) = entry match
 
 def _n(policy: Policy) =
   for
-    lines   <- io.unsafe.lines(challenge(day=2, part=0))
+    lines   <- io.unsafe.lineStream(challenge(day=2, part=0))
     matches <- traverse(lines)(parseEntry(policy))
   yield
     matches.count(identity)

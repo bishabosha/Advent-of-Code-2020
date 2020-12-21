@@ -30,12 +30,12 @@ val s3 = slope(right = 5, down = 1)
 val s4 = slope(right = 7, down = 1)
 val s5 = slope(right = 1, down = 2)
 
-def _n[T](f: Run => T) =
+lazy val _n =
   for
     lines <- io.unsafe.lines(challenge(day=3, part=0))
     run   <- parse(lines)
   yield
-    f(run)
+    run
 
-val _0 = _n(trees(s1)).eval
-val _1 = _n(trees(s1, s2, s3, s4, s5)).eval
+val _0 = _n.map(trees(s1)).eval
+val _1 = _n.map(trees(s1, s2, s3, s4, s5)).eval

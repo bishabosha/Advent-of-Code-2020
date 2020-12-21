@@ -81,12 +81,12 @@ def containsPath(bags: Lookup, target: Int, bag: Int): Boolean =
 def nestedSize(bags: Lookup, bag: Int): Int =
   bags(bag).map(r => r.count + r.count * nestedSize(bags, r.bag)).sum
 
-def _n[T](f: (Seq[Bag], (Int, Encoder)) => T) =
+lazy val _n =
   for
-    lines <- io.unsafe.lines(challenge(day=7, part=0))
+    lines <- io.unsafe.lineStream(challenge(day=7, part=0))
     rules <- traverse(lines)(parse(ruleParser(uniqueId)))
   yield
-    f.tupled(traverseState(rules)((0, Map())))
+    traverseState(rules)((0, Map()))
 
-val _0 = _n(countContainers("shiny", "gold")).flatten.eval
-val _1 = _n(countNested("shiny", "gold")).flatten.eval
+val _0 = _n.flatMap(countContainers("shiny", "gold").tupled).eval
+val _1 = _n.flatMap(countNested("shiny", "gold").tupled).eval

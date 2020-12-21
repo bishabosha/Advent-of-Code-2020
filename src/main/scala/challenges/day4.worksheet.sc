@@ -69,12 +69,15 @@ def allFields(required: Set[Code]): Policy =
 def allValid(required: Set[Code], validation: Code => Rule): Policy =
   allFields(required) && (_.forall(validation(_)(_)))
 
-def _n(policy: Policy) =
+def run(policy: Policy)(passports: Seq[Passport]): Int =
+  passports.map(policy).count(identity)
+
+lazy val _n =
   for
     lines     <- io.unsafe.lines(challenge(day=4, part=0))
     passports <- process(lines)
   yield
-    passports.map(policy).count(identity)
+    passports
 
-val _0 = _n(AllFields).eval
-val _1 = _n(AllValid).eval
+val _0 = _n.map(run(AllFields)).eval
+val _1 = _n.map(run(AllValid)).eval
