@@ -1,4 +1,4 @@
-val dottyVersion = "3.0.0-M2"
+val dottyVersion = "3.0.0-RC1"
 
 lazy val root = project
   .in(file("."))
@@ -8,7 +8,9 @@ lazy val root = project
 
     scalaVersion := dottyVersion,
 
+    semanticdbEnabled := true,
+
     libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % "test",
-    libraryDependencies += "com.lihaoyi" %% "os-lib" % "0.7.1",
-    libraryDependencies += "org.typelevel" %% "cats-parse" % "0.2-34-848b05d",
+    libraryDependencies += "com.lihaoyi" %% "os-lib" % "0.7.3",
+    libraryDependencies += "org.typelevel" %% "cats-parse" % "0.3-7-33b03e0",
   )

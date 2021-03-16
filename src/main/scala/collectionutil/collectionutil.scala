@@ -68,12 +68,12 @@ inline def required(inline test: Boolean) =
   if test then Right(())
   else Left("requirement failed: " + compiletime.codeOf(test))
 
-extension [E, T, U](e: Either[E, T]):
+extension [E, T, U](e: Either[E, T])
   def %> (that: => U): Either[E, U] = e.map(_ => that)
 
   def *> (that: => Either[E,U]): Either[E, U] = e.flatMap(_ => that)
 
   def !> (f: T => U): Either[E, U] = e.map(f)
 
-extension [T](p: T => Boolean):
+extension [T](p: T => Boolean)
   def && (q: T => Boolean): T => Boolean = t => p(t) && q(t)

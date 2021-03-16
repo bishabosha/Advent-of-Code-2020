@@ -1,48 +1,47 @@
-import challenges._
+import challenges.*
 
 import collectionutil._
 
-import cats.parse.Parser1
+import cats.parse.{Parser => P, Numbers}
 
 case class NestedBag(bag: Int, count: Int)
 case class Bag(bag: Int, rules: Seq[NestedBag])
 
 def ruleParser[S](encode: ((String, String)) => State[S, Int]) =
-  import cats.parse.{Parser => P, Numbers}
 
   val sp = P.char(' ')
 
-  val word = P.charsWhile1(('a' to 'z').contains)
+  val word = P.charsWhile(('a' to 'z').contains)
 
-  val nat = (Numbers.nonZeroDigit ~ Numbers.digits).map((s, r) => s"$s$r".toInt)
+  val nat = (Numbers.nonZeroDigit ~ Numbers.digits0).map((s, r) => s"$s$r".toInt)
 
   val one = P.char('1')
 
   val adjColor = (word <* sp) ~ (word <* sp)
 
-  val noBags = P.string1("no other bags").as(List.empty)
+  val noBags = P.string("no other bags").as(List.empty)
 
-  val oneBag = ((one <* sp) *> adjColor <* P.string1("bag")).map(
+  val oneBag = ((one <* sp) *> adjColor <* P.string("bag")).map(
     encode(_).map(NestedBag(_, count = 1)))
 
-  val multiBag = ((nat <* sp) ~ adjColor <* P.string1("bags")).map((n, p) =>
+  val multiBag = ((nat <* sp) ~ adjColor <* P.string("bags")).map((n, p) =>
     encode(p).map(NestedBag(_, count = n)))
 
-  val natBag = P.oneOf1(oneBag :: multiBag :: Nil)
+  val natBag = P.oneOf(oneBag :: multiBag :: Nil)
 
-  val natBags = P.repSep(natBag, min = 1, sep = P.string1(", "))
+  val natBags = P.repSep(natBag, min = 1, sep = P.string(", "))
 
-  val nestedBags = P.oneOf(noBags :: natBags :: Nil).map(traverseState)
+  val nestedBags = P.oneOf(noBags :: natBags.map(_.toList) :: Nil) <* P.char('.') map traverseState
 
-  val bag = (adjColor <* P.string1("bags contain ")).map(encode)
+  val bag = (adjColor <* P.string("bags contain ")).map(encode)
 
-  (bag ~ nestedBags <* (P.char('.') <* P.end)).map((bs, rss) =>
+  (bag ~ nestedBags <* P.end).map((bs, rss) =>
     for
       b  <- bs
       rs <- rss
     yield Bag(b, rs))
 
-def parse[T](parser: Parser1[T])(line: String) =
+def parse[T](parser: P[T])(line: String) =
   parser.parse(line).map(_(1))
 
 type Encoder = Map[(String, String), Int]
