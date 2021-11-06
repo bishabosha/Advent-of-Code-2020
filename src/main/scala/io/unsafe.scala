@@ -5,10 +5,8 @@ type Result[+E, +A] = Either[E, A]
 
 def lines(file: os.Path => os.Path): IO[IndexedSeq[String]] =
   try Right(os.read.lines(file(os.pwd)))
-  catch
-    case err: java.io.IOException => Left(err)
+  catch case err: java.io.IOException => Left(err)
 
 def lineStream(file: os.Path => os.Path): IO[geny.Generator[String]] =
   try Right(os.read.lines.stream(file(os.pwd)))
-  catch
-    case err: java.io.IOException => Left(err)
+  catch case err: java.io.IOException => Left(err)
