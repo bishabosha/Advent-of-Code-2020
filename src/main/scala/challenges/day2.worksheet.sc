@@ -2,7 +2,7 @@ import challenges.*
 
 import collectionutil.*
 
-val Entry = raw"(\d+)-(\d+) ([a-z]): (\w+)".r
+val Entry = rx"(\d+)-(\d+) ([a-z]): (\w+)"
 
 type Policy = (Int, Int, Char, String) => Either[String, Boolean]
 

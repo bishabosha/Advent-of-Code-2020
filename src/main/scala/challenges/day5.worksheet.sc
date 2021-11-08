@@ -23,7 +23,7 @@ lazy val SeatSplit: Split[Seat] = {
 val Rows = 0 to 127
 val Seats = 0 to 7
 
-val Position = raw"([FB]{7})([LR]{3})".r
+val Position = rx"([FB]{7})([LR]{3})"
 
 def parse(lines: geny.Generator[String]): Either[String, Seq[Position]] = traverse(lines) {
   case Position(row, seat) => Right((row.toIndexedSeq -> seat.toIndexedSeq).asInstanceOf[Position])
