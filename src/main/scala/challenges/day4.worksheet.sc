@@ -3,10 +3,12 @@ import challenges.*
 import collectionutil.*
 
 import Code.*
+import Rule.*
 
 type Passport = Map[Code, String]
 type Policy = Passport => Boolean
 type Validation = String => Boolean
+type Lookup = Code => Rule
 
 enum Code:
   case Byr, Iyr, Eyr, Hgt, Hcl, Ecl, Pid, Cid
@@ -24,7 +26,7 @@ object Validation:
 def process(lines: Seq[String]): Either[String, Seq[Passport]] =
 
   val codes = Map(Code.values.map(c => c.toString.toLowerCase -> c)*)
-  val Field = s"(${codes.keys.mkString("|")}):(.+)".r
+  val Field = rx"(${codes.keys.mkString("|")}):(.+)"
 
   def fields(lines: Seq[String]) =
     val noSpaces = lines.map(_.split(" ").filter(_.trim.nonEmpty)).flatten
@@ -37,33 +39,37 @@ def process(lines: Seq[String]): Either[String, Seq[Passport]] =
 
 end process
 
-enum Rule(val validate: Validation):
+enum Rule:
   case Year(in: Range)
-      extends Rule(Validation.rule(raw"(\d\d\d\d)".r) { case Seq(i) =>
-        in.contains(i.toInt)
-      })
   case Height(cm: Range, in: Range)
-      extends Rule(Validation.rule(raw"(\d+)((?:cm|in))".r) {
+  case Color, Eye, Pin, All
+
+  lazy val validate: Validation = this match
+    case Year(in: Range) =>
+      Validation.rule(rx"(\d\d\d\d)") { case Seq(i) =>
+        in.contains(i.toInt)
+      }
+    case Height(cm: Range, in: Range) =>
+      Validation.rule(rx"(\d+)((?:cm|in))") {
         case Seq(i, "cm") => cm.contains(i.toInt)
         case Seq(i, "in") => in.contains(i.toInt)
-      })
-  case Color extends Rule(Validation.regex(raw"#(?:[0-9]|[a-f]){6}".r))
-  case Eye extends Rule(Validation.regex(raw"amb|blu|brn|gry|grn|hzl|oth".r))
-  case Pin extends Rule(Validation.regex(raw"\d{9}".r))
-  case All extends Rule(Validation.anything)
+      }
+    case Color => Validation.regex(rx"#(?:[0-9]|[a-f]){6}")
+    case Eye   => Validation.regex(rx"amb|blu|brn|gry|grn|hzl|oth")
+    case Pin   => Validation.regex(rx"\d{9}")
+    case All   => Validation.anything
 
-import Rule.*
+end Rule
 
-lazy val Rules = Map(
-  Byr -> Year(1920 to 2002),
-  Iyr -> Year(2010 to 2020),
-  Eyr -> Year(2020 to 2030),
-  Hgt -> Height(cm = 150 to 193, in = 59 to 76),
-  Hcl -> Color,
-  Ecl -> Eye,
-  Pid -> Pin,
-  Cid -> All
-)
+lazy val Rules: Lookup =
+  case Byr => Year(1920 to 2002)
+  case Iyr => Year(2010 to 2020)
+  case Eyr => Year(2020 to 2030)
+  case Hgt => Height(cm = 150 to 193, in = 59 to 76)
+  case Hcl => Color
+  case Ecl => Eye
+  case Pid => Pin
+  case Cid => All
 
 val Required = Code.values.toSet - Code.Cid
 
@@ -73,7 +79,7 @@ lazy val AllValid = allValid(Required, Rules)
 def allFields(required: Set[Code]): Policy =
   passport => (required -- passport.keys).isEmpty
 
-def allValid(required: Set[Code], rule: Code => Rule): Policy =
+def allValid(required: Set[Code], rule: Lookup): Policy =
   allFields(required) && (_.forall(rule(_).validate(_)))
 
 def run(policy: Policy)(passports: Seq[Passport]): Int =
